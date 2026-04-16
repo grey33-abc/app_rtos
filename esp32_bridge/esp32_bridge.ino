@@ -3,9 +3,9 @@
 #include <ArduinoJson.h>
 
 // ==== CẤU HÌNH WIFI & MQTT ====
-const char* ssid = "YOUR_WIFI_SSID";             // Đổi thành tên WiFi của bạn
-const char* password_wifi = "YOUR_WIFI_PASS";    // Đổi thành mật khẩu WiFi của bạn
-const char* mqtt_server = "broker.emqx.io";      // MQTT Broker public (có thể đổi sang broker khác nếu muốn)
+const char* ssid = "Hoang Thanh";             
+const char* password_wifi = "hoangthanh895";    
+const char* mqtt_server = "broker.emqx.io";      
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -85,8 +85,8 @@ void reconnect() {
   if (WiFi.status() == WL_CONNECTED) {
     if (!client.connected()) {
       Serial.print("Đang thử kết nối lại tới MQTT Broker...");
-      String clientId = "ESP32Bridge-SmartHome-";
-      clientId += String(random(0xffff), HEX);
+      String clientId = "SmartHomeBridge-";
+      clientId += String(ESP.getEfuseMac(), HEX);
       
       // Connect với Last Will (LWT) để báo Offline
       if (client.connect(clientId.c_str(), NULL, NULL, "home/status", 0, true, "OFFLINE")) {
@@ -106,9 +106,8 @@ void reconnect() {
 }
 
 void setup() {
-  Serial.begin(115200);   // Giao tiếp với Serial Monitor để Debug
+  Serial.begin(115200);   
   
-  // STM32 dùng 115200 baudrate (Serial3.begin(115200) trong stm32_core.ino)
   STM32_SERIAL.begin(115200, SERIAL_8N1, RXD2, TXD2); 
 
   setup_wifi();
@@ -119,7 +118,6 @@ void setup() {
 }
 
 void loop() {
-  // Quản lý duy trì MQTT
   if (!client.connected()) {
     Serial.println("[MQTT] Mất kết nối! Đang reconnect...");
     long now = millis();
@@ -134,17 +132,15 @@ void loop() {
   // ==== NHẬN DỮ LIỆU TỪ STM32 & ĐẨY LÊN MQTT SERVER ====
   if (STM32_SERIAL.available()) {
     String incomingData = STM32_SERIAL.readStringUntil('\n');
-    incomingData.trim(); // Loại bỏ kí tự khoảng trắng thừa, \r \n
+    incomingData.trim(); 
     
     if (incomingData.length() > 0) {
-      // In ra Monitor để Debug
       Serial.println("STM32 Gửi: " + incomingData); 
       
-      // Data Môi trường & Cảm biến (Gói JSON)
       if (incomingData.startsWith("{") && incomingData.endsWith("}")) {
         client.publish("home/sensors/data", incomingData.c_str());
       }
-      // Data Trạng thái riêng của cửa chính (DOOR:...)
+
       else if (incomingData.startsWith("DOOR:")) {
         String statusJson = incomingData.substring(5);
         client.publish("home/door/status", statusJson.c_str());

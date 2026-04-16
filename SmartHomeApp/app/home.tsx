@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40 
   },
   contentWrapper: {
-    marginTop: 120, // Start floating over the gradient header
+    marginTop: 120, 
     paddingHorizontal: 20
   }
 });

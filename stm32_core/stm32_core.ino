@@ -10,9 +10,9 @@
 #include <semphr.h>
 #include <queue.h>
 #include <LiquidCrystal_I2C.h>
-#include <ArduinoJson.h> // THÊM THƯ VIỆN NÀY ĐỂ PARSE/CREATE JSON
+#include <ArduinoJson.h> 
 
-// Khởi tạo cứng Serial3 cho giao tiếp với ESP32 để tránh xung đột chân PA9 (USB VBUS)
+// Khởi tạo cứng Serial3 cho giao tiếp với ESP32 
 HardwareSerial Serial3(PB11, PB10); // RX = PB11, TX = PB10
 // cấu hình chân
 #define FLAME_ANALOG PA1
@@ -109,7 +109,7 @@ volatile bool dhtValid = false;
 // pass / lockout
 char enteredPassword[9] = "";
 uint8_t enteredLen = 0;
-char correctPassword[5] = "1234"; // Thay đổi từ const char[] thành char[] để cập nhật được
+char correctPassword[5] = "1234"; 
 
 volatile int wrongAttempts = 0;
 volatile bool keypadLocked = false;
@@ -557,7 +557,6 @@ void taskAlarm(void *pvParameters) {
   }
 }
 
-// Thêm biến đếm để gửi định kỳ tránh khóa chết delay
 static uint32_t lastSerialSyncTime = 0;
 
 // ==== TASK GIAO TIẾP VỚI ESP32 (UART) ====
@@ -600,7 +599,7 @@ void taskSerialSync(void *pvParameters) {
       Serial3.flush();
     }
 
-    // 2. Nhận lệnh từ ESP32 THƯỜNG XUYÊN, KHÔNG DELAY 2S
+    // 2. Nhận lệnh từ ESP32 THƯỜNG XUYÊN
     while (Serial3.available()) {
       String line = Serial3.readStringUntil('\n');
       line.trim();
@@ -644,7 +643,6 @@ void taskSerialSync(void *pvParameters) {
       }
     }
 
-    // Delay cực ngắn để giữ cho task không ăn trọn CPU, nhưng vẫn kịp nhặt được tất cả lệnh UART bay tới
     vTaskDelay(pdMS_TO_TICKS(50));
   }
 }
