@@ -1,4 +1,4 @@
 
 export const Config = {
-  SERVER_URL: 'http://192.168.1.103:5000',
+  SERVER_URL: 'http://172.20.10.4:5000',
 };

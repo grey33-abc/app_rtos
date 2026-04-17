@@ -5,6 +5,7 @@
 #include <DHT.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <EEPROM.h>
 
 #include <STM32FreeRTOS.h>
 #include <semphr.h>
@@ -109,7 +110,26 @@ volatile bool dhtValid = false;
 // pass / lockout
 char enteredPassword[9] = "";
 uint8_t enteredLen = 0;
-char correctPassword[5] = "1234"; 
+char correctPassword[5] = "1234";
+
+#define EEPROM_PASS_ADDR 0
+#define EEPROM_MAGIC 0xAB
+
+void savePasswordToEEPROM(const char* pass) {
+  EEPROM.write(EEPROM_PASS_ADDR, EEPROM_MAGIC);
+  for (int i = 0; i < 4; i++) {
+    EEPROM.write(EEPROM_PASS_ADDR + 1 + i, (uint8_t)pass[i]);
+  }
+}
+
+void loadPasswordFromEEPROM() {
+  if (EEPROM.read(EEPROM_PASS_ADDR) == EEPROM_MAGIC) {
+    for (int i = 0; i < 4; i++) {
+      correctPassword[i] = (char)EEPROM.read(EEPROM_PASS_ADDR + 1 + i);
+    }
+    correctPassword[4] = '\0';
+  }
+}
 
 volatile int wrongAttempts = 0;
 volatile bool keypadLocked = false;
@@ -638,6 +658,7 @@ void taskSerialSync(void *pvParameters) {
         String newPass = line.substring(5);
         if (newPass.length() == 4) {
            newPass.toCharArray(correctPassword, 5);
+           savePasswordToEEPROM(correctPassword);
            sendLCDMessage("Mat khau", "Da cap nhat");
         }
       }
@@ -705,6 +726,7 @@ void setup() {
   }
 
   clearEnteredPassword();
+  loadPasswordFromEEPROM();
   sendLCDMessage("Nhap mat khau", "Nhan # de mo");
 
   xTaskCreate(taskLCD, "LCD", 256, NULL, 2, NULL);
